@@ -1,0 +1,246 @@
+## 1. Why a Template Instead of One-Off Prompts
+
+Instead of writing a fresh prompt every time I need notes for a new topic, I built one **reusable template** with 5 labeled sections. Each new prompt is just the same skeleton with different variables plugged in — the same way a function takes different arguments but keeps the same logic.
+
+---
+
+## 2. The Reusable Template
+
+```
+ROLE: You are an expert [SUBJECT] tutor who creates exam-focused study material
+for [LEVEL] students.
+
+CONTEXT: The student is preparing for [EXAM_TYPE] on [TOPIC], covered in
+[COURSE_NAME]. They have [TIME_AVAILABLE] before the exam and
+[PRIOR_KNOWLEDGE_LEVEL] with this topic.
+
+TASK: Create [OUTPUT_TYPE] covering [SPECIFIC_SUBTOPICS], prioritizing the
+concepts most likely to be tested.
+
+FORMAT: [FORMAT_SPEC]. Keep it to approximately [LENGTH].
+
+CONSTRAINTS: [CONSTRAINTS] — e.g. simple language, one worked example,
+no filler/intro paragraphs, exam-relevant only.
+```
+
+**Variables to swap each time:** SUBJECT, LEVEL, EXAM_TYPE, TOPIC, COURSE_NAME, TIME_AVAILABLE, PRIOR_KNOWLEDGE_LEVEL, OUTPUT_TYPE, SPECIFIC_SUBTOPICS, FORMAT_SPEC, LENGTH, CONSTRAINTS.
+
+---
+
+## 3. Five Prompts Built From the Template (+ Tested Outputs)
+
+### Prompt 1 — SDA: Architectural Styles
+
+```
+ROLE: You are an expert Software Design & Architecture tutor who creates
+exam-focused study material for undergraduate CS students.
+
+CONTEXT: The student is preparing for a midterm exam on Architectural Styles,
+covered in Software Design & Architecture (SDA). They have 2 days before the
+exam and basic familiarity with the topic.
+
+TASK: Create quick revision notes covering the Virtual Machine style and the
+Call-and-Return style (including its subtypes), prioritizing concepts most
+likely to be tested.
+
+FORMAT: Bullet points under clear headings. Keep it to approximately 200-250
+words.
+
+CONSTRAINTS: Simple language, include one real-world example per style, no
+filler/intro paragraphs, exam-relevant only.
+```
+
+**Output:**
+
+**Virtual Machine Style**
+- Simulates a machine/language not natively supported by hardware; an interpreter engine executes instructions using stored program state
+- Two core parts: interpretation engine + current state data
+- Example: the JVM interprets Java bytecode into machine-specific instructions
+- Pros: portability, easy to change rules/logic without recompiling
+- Cons: performance overhead from interpretation layer, harder to debug
+
+**Call-and-Return Style**
+- Control flows through function/procedure calls with returns; hierarchical decomposition of a system
+- **Main Program/Subroutine:** single-threaded, top-down decomposition — e.g. a simple calculator program calling helper functions
+- **Object-Oriented:** objects encapsulate data + behavior, communicate via method calls — e.g. a Hospital Management System where `Patient`, `Doctor`, `Appointment` objects interact
+- **Layered:** components arranged in layers; each layer serves the one above and uses the one below — e.g. OSI network model
+- Pros: modular, well-understood, easy to reason about
+- Cons: Main/Subroutine variant risks tight coupling; Layered can add latency across layers
+
+---
+
+### Prompt 2 — DBMS: BCNF Normalization Flashcards
+
+```
+ROLE: You are an expert Database Systems tutor who creates exam-focused study
+material for undergraduate CS students.
+
+CONTEXT: The student is preparing for a final exam on Normalization, covered
+in Database Management Systems. They have 3 days before the exam and moderate
+familiarity — they know 3NF but are shaky on BCNF.
+
+TASK: Create flashcards covering the definition of BCNF, how it differs from
+3NF, and the decomposition process, prioritizing concepts most likely to be
+tested.
+
+FORMAT: Numbered flashcards — "Q:" on one line, "A:" on the next. Keep it to
+5 cards.
+
+CONSTRAINTS: Simple language, no filler/intro paragraphs, exam-relevant only.
+```
+
+**Output:**
+
+1. **Q:** What is BCNF?
+**A:** A stricter form of 3NF where for every non-trivial functional dependency X→Y, X must be a superkey.
+
+2. **Q:** How does BCNF differ from 3NF?
+**A:** 3NF has an exception allowing X→Y even if X isn't a superkey, as long as Y is a prime attribute. BCNF removes that exception entirely.
+
+3. **Q:** When does a relation violate BCNF?
+**A:** When there's a functional dependency X→Y where X is not a candidate key.
+
+4. **Q:** What are the steps to decompose a relation into BCNF?
+**A:** Find the FD violating BCNF → split the relation into (X, Y) and (X, remaining attributes) → repeat on each piece until no violations remain.
+
+5. **Q:** Does BCNF decomposition always preserve functional dependencies?
+**A:** No — BCNF guarantees a lossless join, but dependency preservation is not always guaranteed (unlike 3NF decomposition).
+
+---
+
+### Prompt 3 — Algorithms: Min-Cost Flow Cheat Sheet
+
+```
+ROLE: You are an expert Algorithms tutor who creates exam-focused study
+material for undergraduate CS students.
+
+CONTEXT: The student is preparing for a final exam on Network Flow
+algorithms, covered in CSC-321 (Design & Analysis of Algorithms). They have
+1 day before the exam and have already studied this once (used it for a
+Domino's Pakistan distribution case study presentation).
+
+TASK: Create a cheat sheet covering the Successive Shortest Path algorithm
+for Minimum-Cost Flow, prioritizing the exact steps and complexity, since
+that's what tends to be tested.
+
+FORMAT: A short numbered step list plus a "complexity" and "use case" line
+at the end. Keep it to approximately 150 words.
+
+CONSTRAINTS: Simple language, no filler/intro paragraphs, exam-relevant only.
+```
+
+**Output:**
+
+**Min-Cost Flow — Successive Shortest Path Algorithm**
+1. Start with zero flow across the network
+2. Find the shortest (lowest-cost) path from source to sink in the residual graph — use Bellman-Ford/SPFA since reverse edges can have negative cost
+3. Push the maximum possible flow along that path, limited by the smallest residual capacity on the path
+4. Update the residual graph: reduce forward capacities, add reverse edges with negated cost
+5. Repeat steps 2–4 until the target flow is reached or no augmenting path exists
+
+**Complexity:** roughly O(F · E log V), where F is the total flow value (depends on shortest-path implementation used)
+
+**Use case:** modeling delivery cost minimization — e.g. warehouse (source) → stores (sink), edge capacity = truck capacity, edge cost = distance/fuel — matches the Domino's distribution case study.
+
+---
+
+### Prompt 4 — SQL Server: Practice Q&A
+
+```
+ROLE: You are an expert Database Systems tutor who creates exam-focused study
+material for undergraduate CS students.
+
+CONTEXT: The student is preparing for a practical exam on T-SQL queries and
+core database concepts, covered in Database Systems (SQL Server). They have
+2 days before the exam and intermediate familiarity — comfortable with basic
+SELECT/JOIN, weaker on indexing and ACID.
+
+TASK: Create practice exam questions with answers covering: finding the Nth
+highest value with a query, clustered vs non-clustered indexes, GROUP BY +
+HAVING, and ACID properties.
+
+FORMAT: Numbered Q&A pairs, one query example written in actual T-SQL syntax
+where relevant. Keep it to 5 questions.
+
+CONSTRAINTS: Simple language, no filler/intro paragraphs, exam-relevant only.
+```
+
+**Output:**
+
+1. **Q:** Write a query to find the second-highest salary from an `Employees` table.
+**A:**
+```sql
+SELECT MAX(Salary) AS SecondHighest
+FROM Employees
+WHERE Salary < (SELECT MAX(Salary) FROM Employees);
+```
+
+2. **Q:** What's the difference between a clustered and a non-clustered index?
+**A:** A clustered index physically sorts and stores table rows in order of the index key (only one per table). A non-clustered index is a separate structure with pointers back to the actual rows (a table can have many).
+
+3. **Q:** Write a query to find departments with more than 5 employees.
+**A:**
+```sql
+SELECT DepartmentID, COUNT(*) AS EmpCount
+FROM Employees
+GROUP BY DepartmentID
+HAVING COUNT(*) > 5;
+```
+
+4. **Q:** When would you prefer a JOIN over a subquery, performance-wise?
+**A:** JOINs are generally more efficient for retrieving related data because the query optimizer can better plan execution; correlated subqueries often re-execute per row, which is slower on large datasets.
+
+5. **Q:** What do the ACID properties guarantee?
+**A:** **Atomicity** — transactions fully complete or fully fail. **Consistency** — data stays valid per constraints. **Isolation** — concurrent transactions don't interfere. **Durability** — committed changes survive system failure.
+
+---
+
+### Prompt 5 — OOP: Design Patterns Summary Notes
+
+```
+ROLE: You are an expert Software Design tutor who creates exam-focused study
+material for undergraduate CS students.
+
+CONTEXT: The student is preparing for a lab exam on Design Patterns, covered
+in Software Design & Architecture. They have 2 days before the exam and have
+already implemented these patterns in Python for a lab assignment.
+
+TASK: Create summary notes covering the Builder pattern and the Facade
+pattern — what problem each solves, their structure, and when to use them.
+
+FORMAT: Two headed sections, bullet points under each. Keep it to
+approximately 180 words.
+
+CONSTRAINTS: Simple language, include one real-world example per pattern,
+no filler/intro paragraphs, exam-relevant only.
+```
+
+**Output:**
+
+**Builder Pattern**
+- Solves: constructing complex objects step-by-step, especially when there are many optional parameters
+- Structure: `Director` (orchestrates build order) → `Builder` interface → `ConcreteBuilder` (implements steps) → `Product` (final object)
+- Use when: an object has many configuration options and you want to avoid a constructor with 10+ parameters
+- Example: building a `Computer` object where RAM, storage, GPU, and cooling are all optional/configurable
+
+**Facade Pattern**
+- Solves: reducing complexity for the client when interacting with a complicated subsystem of many classes
+- Structure: a single `Facade` class exposes simplified methods that internally coordinate multiple subsystem classes
+- Use when: you want to decouple client code from subsystem internals, or provide one clean entry point
+- Example: an `OrderFacade` in an e-commerce system that internally coordinates `Inventory`, `Payment`, and `Shipping` classes behind one `placeOrder()` method
+
+---
+
+## 4. What This Demonstrates
+
+- One template → 5 working prompts just by swapping variables (no rewriting structure each time)
+- Covers 3 different output formats (revision notes, flashcards, cheat sheet, Q&A, summary notes) from the same 5-section skeleton
+- All 5 tested live in Claude, outputs saved above
+
+---
+
+## 5. Remaining Steps (outside this doc)
+
+- [ ] Record a 2–3 min video: show the template, then demo **2 of the 5 prompts live** (e.g. Prompt 1 and Prompt 3)
+- [ ] Upload the video to LinkedIn, tagging **Neurofive Solutions**
+- [ ] Share the LinkedIn link in your submission
